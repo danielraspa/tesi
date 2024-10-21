@@ -57,7 +57,6 @@ public :
    vector<float>   *mu_d0sig_loose;
    vector<float>   *mu_eta;
    vector<float>   *mu_phi;
-   vector<int>     *mu_truthOrigin;
    vector<float>   *mu_z0sintheta_loose;
    vector<int>     *tau_NNDecayMode;
    vector<float>   *tau_charge;
@@ -67,10 +66,17 @@ public :
    Float_t         weight_ftag_effSF_DL1dv01_Continuous_NOSYS;
    Float_t         weight_mc_NOSYS;
    Float_t         weight_jvt_effSF_NOSYS;
+   Float_t         weight_leptonSF_loose_NOSYS;
+   Char_t          pass_SR2L2J_NOSYS;
+   Char_t          pass_SR2L3J_NOSYS;
+   Char_t          pass_SR2L4J_NOSYS;
+   Char_t          pass_SR2LOS2J_NOSYS;
+   Char_t          pass_SR2LOS3J_NOSYS;
+   Char_t          pass_SR2LOS4J_NOSYS;
+   Char_t          pass_SR2LSS2J_NOSYS;
+   Char_t          pass_SR2LSS3J_NOSYS;
+   Char_t          pass_SR2LSS4J_NOSYS;
    Char_t          pass_SUBcommon_NOSYS;
-   Char_t          pass_eq3J2L_NOSYS; //richiesto esattamente 3J e 2lep
-   Char_t          pass_eq4J2L_NOSYS; //richiesto esattamente 4J e 2lep
-   Char_t          pass_leq2J2L_NOSYS; //richiesto esattamente <=2J e 2lep
    vector<char>    *el_select_loose_NOSYS;
    vector<char>    *el_select_tight_NOSYS;
    vector<float>   *el_e_NOSYS;
@@ -103,7 +109,6 @@ public :
    Float_t         met_phi_NOSYS;
    Float_t         met_significance_NOSYS;
    Float_t         met_sumet_NOSYS;
-   TString         filter;   
 
    // List of branches
    TBranch        *b_weight_beamspot;   //!
@@ -136,7 +141,6 @@ public :
    TBranch        *b_mu_d0sig_loose;   //!
    TBranch        *b_mu_eta;   //!
    TBranch        *b_mu_phi;   //!
-   TBranch        *b_mu_truthOrigin;   //!
    TBranch        *b_mu_z0sintheta_loose;   //!
    TBranch        *b_tau_NNDecayMode;   //!
    TBranch        *b_tau_charge;   //!
@@ -146,10 +150,17 @@ public :
    TBranch        *b_weight_ftag_effSF_DL1dv01_Continuous_NOSYS;   //!
    TBranch        *b_weight_mc_NOSYS;   //!
    TBranch        *b_weight_jvt_effSF_NOSYS;   //!
+   TBranch        *b_weight_leptonSF_loose_NOSYS;   //!
+   TBranch        *b_pass_SR2L2J_NOSYS;   //!
+   TBranch        *b_pass_SR2L3J_NOSYS;   //!
+   TBranch        *b_pass_SR2L4J_NOSYS;   //!
+   TBranch        *b_pass_SR2LOS2J_NOSYS;   //!
+   TBranch        *b_pass_SR2LOS3J_NOSYS;   //!
+   TBranch        *b_pass_SR2LOS4J_NOSYS;   //!
+   TBranch        *b_pass_SR2LSS2J_NOSYS;   //!
+   TBranch        *b_pass_SR2LSS3J_NOSYS;   //!
+   TBranch        *b_pass_SR2LSS4J_NOSYS;   //!
    TBranch        *b_pass_SUBcommon_NOSYS;   //!
-   TBranch        *b_pass_eq3J2L_NOSYS;   //!
-   TBranch        *b_pass_eq4J2L_NOSYS;   //!
-   TBranch        *b_pass_leq2J2L_NOSYS;   //!
    TBranch        *b_el_select_loose_NOSYS;   //!
    TBranch        *b_el_select_tight_NOSYS;   //!
    TBranch        *b_el_e_NOSYS;   //!
@@ -189,13 +200,12 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     SetFilter(TString setFilter);
    virtual void     Loop();
    virtual bool     Notify();
    virtual void     Show(Long64_t entry = -1);
 
-   double CalcInvMass(const std::vector<ROOT::Math::PtEtaPhiEVector>& particles);
-   double CalcInvMass(const ROOT::Math::PtEtaPhiEVector& particle);
+   double CalcInvMass(std::vector<ROOT::Math::PtEtaPhiEVector>& particles);
+   // double CalcInvMass(const ROOT::Math::PtEtaPhiEVector& particle);
 
    std::vector<ROOT::Math::PtEtaPhiEVector> electrons;
    std::vector<ROOT::Math::PtEtaPhiEVector> muons;
@@ -208,6 +218,10 @@ public :
    double inv_mass1{};
    double inv_mass2{};
    void DrawHistos();
+   void InitFilterMap();
+   bool CheckFilter(const std::string& filter = "2L4J");
+   std::unordered_map<std::string, Char_t*> filter_map;
+
 };
 
 #endif

@@ -9,9 +9,9 @@ MyClass::MyClass(TTree *tree) : fChain(0)  {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("testXX.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("sig_510664_mc20e_EL_LooseBLayerLH_HighPtCaloOnly_MU_Loose_Loose_VarRad.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("testXX.root");
+         f = new TFile("sig_510664_mc20e_EL_LooseBLayerLH_HighPtCaloOnly_MU_Loose_Loose_VarRad.root");
       }
       f->GetObject("reco",tree);
 
@@ -41,8 +41,8 @@ Long64_t MyClass::LoadTree(Long64_t entry) {
    return centry;
 }
 
-void MyClass::Init(TTree *tree) {
-   // The Init() function is called when the selector needs to initialize
+void MyClass::Init(TTree *tree)
+{  // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
    // pointers of the tree will be set.
    // It is normally not necessary to make changes to the generated
@@ -67,7 +67,6 @@ void MyClass::Init(TTree *tree) {
    mu_d0sig_loose = 0;
    mu_eta = 0;
    mu_phi = 0;
-   mu_truthOrigin = 0;
    mu_z0sintheta_loose = 0;
    tau_NNDecayMode = 0;
    tau_charge = 0;
@@ -137,7 +136,6 @@ void MyClass::Init(TTree *tree) {
    fChain->SetBranchAddress("mu_d0sig_loose", &mu_d0sig_loose, &b_mu_d0sig_loose);
    fChain->SetBranchAddress("mu_eta", &mu_eta, &b_mu_eta);
    fChain->SetBranchAddress("mu_phi", &mu_phi, &b_mu_phi);
-   fChain->SetBranchAddress("mu_truthOrigin", &mu_truthOrigin, &b_mu_truthOrigin);
    fChain->SetBranchAddress("mu_z0sintheta_loose", &mu_z0sintheta_loose, &b_mu_z0sintheta_loose);
    fChain->SetBranchAddress("tau_NNDecayMode", &tau_NNDecayMode, &b_tau_NNDecayMode);
    fChain->SetBranchAddress("tau_charge", &tau_charge, &b_tau_charge);
@@ -147,10 +145,17 @@ void MyClass::Init(TTree *tree) {
    fChain->SetBranchAddress("weight_ftag_effSF_DL1dv01_Continuous_NOSYS", &weight_ftag_effSF_DL1dv01_Continuous_NOSYS, &b_weight_ftag_effSF_DL1dv01_Continuous_NOSYS);
    fChain->SetBranchAddress("weight_mc_NOSYS", &weight_mc_NOSYS, &b_weight_mc_NOSYS);
    fChain->SetBranchAddress("weight_jvt_effSF_NOSYS", &weight_jvt_effSF_NOSYS, &b_weight_jvt_effSF_NOSYS);
+   fChain->SetBranchAddress("weight_leptonSF_loose_NOSYS", &weight_leptonSF_loose_NOSYS, &b_weight_leptonSF_loose_NOSYS);
+   fChain->SetBranchAddress("pass_SR2L2J_NOSYS", &pass_SR2L2J_NOSYS, &b_pass_SR2L2J_NOSYS);
+   fChain->SetBranchAddress("pass_SR2L3J_NOSYS", &pass_SR2L3J_NOSYS, &b_pass_SR2L3J_NOSYS);
+   fChain->SetBranchAddress("pass_SR2L4J_NOSYS", &pass_SR2L4J_NOSYS, &b_pass_SR2L4J_NOSYS);
+   fChain->SetBranchAddress("pass_SR2LOS2J_NOSYS", &pass_SR2LOS2J_NOSYS, &b_pass_SR2LOS2J_NOSYS);
+   fChain->SetBranchAddress("pass_SR2LOS3J_NOSYS", &pass_SR2LOS3J_NOSYS, &b_pass_SR2LOS3J_NOSYS);
+   fChain->SetBranchAddress("pass_SR2LOS4J_NOSYS", &pass_SR2LOS4J_NOSYS, &b_pass_SR2LOS4J_NOSYS);
+   fChain->SetBranchAddress("pass_SR2LSS2J_NOSYS", &pass_SR2LSS2J_NOSYS, &b_pass_SR2LSS2J_NOSYS);
+   fChain->SetBranchAddress("pass_SR2LSS3J_NOSYS", &pass_SR2LSS3J_NOSYS, &b_pass_SR2LSS3J_NOSYS);
+   fChain->SetBranchAddress("pass_SR2LSS4J_NOSYS", &pass_SR2LSS4J_NOSYS, &b_pass_SR2LSS4J_NOSYS);
    fChain->SetBranchAddress("pass_SUBcommon_NOSYS", &pass_SUBcommon_NOSYS, &b_pass_SUBcommon_NOSYS);
-   fChain->SetBranchAddress("pass_eq3J2L_NOSYS", &pass_eq3J2L_NOSYS, &b_pass_eq3J2L_NOSYS);
-   fChain->SetBranchAddress("pass_eq4J2L_NOSYS", &pass_eq4J2L_NOSYS, &b_pass_eq4J2L_NOSYS);
-   fChain->SetBranchAddress("pass_leq2J2L_NOSYS", &pass_leq2J2L_NOSYS, &b_pass_leq2J2L_NOSYS);
    fChain->SetBranchAddress("el_select_loose_NOSYS", &el_select_loose_NOSYS, &b_el_select_loose_NOSYS);
    fChain->SetBranchAddress("el_select_tight_NOSYS", &el_select_tight_NOSYS, &b_el_select_tight_NOSYS);
    fChain->SetBranchAddress("el_e_NOSYS", &el_e_NOSYS, &b_el_e_NOSYS);
@@ -215,47 +220,39 @@ Int_t MyClass::Cut(Long64_t entry) {
 //####################################################################
 
 
-double MyClass::CalcInvMass(const std::vector<ROOT::Math::PtEtaPhiEVector>& particles){
+double MyClass::CalcInvMass(vector<ROOT::Math::PtEtaPhiEVector>& particles){
+   
    double tot_px{};
    double tot_py{};
    double tot_pz{};
-   for (int i = 0; i < particles.size(); i++){tot_px += particles[i].Px();} //controllare se < o <=
-   for (int i = 0; i < particles.size(); i++){tot_py += particles[i].Py();}
-   for (int i = 0; i < particles.size(); i++){tot_pz += particles[i].Pz();}
+   double tot_e{};
+
+   for (int i = 0; i < particles.size(); i++){
+      tot_px += particles[i].Px(); 
+      tot_py += particles[i].Py(); 
+      tot_pz += particles[i].Pz();
+      tot_e  += particles[i].E();
+   } 
+
    double tot_p2 = (tot_px * tot_px + tot_py * tot_py + tot_pz * tot_pz);
-
-   std::cout << "p2 " << tot_p2 << '\n';
-
-   double tot_e2{};
-   for (int i = 0; i < particles.size(); i++){tot_e2 += (particles[i].E() * particles[i].E());}
-
-   std::cout << "E2 " << tot_e2 << '\n';
-
-   std::cout << "tot_e2 - tot_p2 " << tot_e2 - tot_p2 << '\n';
+   double tot_e2 = tot_e * tot_e;
+   //std::cout << "p2 " << tot_p2 << '\n';
+   //std::cout << "E2 " << tot_e2 << '\n';
 
    double inv_mass = TMath::Sqrt(tot_e2 - tot_p2);
+   std::cout << "inv_mass " << inv_mass/1e3 << '\n';
 
    //std::cout << inv_mass << '\n';
 
-   return inv_mass;    
-}
-
-double MyClass::CalcInvMass(const ROOT::Math::PtEtaPhiEVector& particle){
-   double p2 = (particle.Px() * particle.Px() + particle.Py() * particle.Py() + particle.Pz() * particle.Pz());
-
-   double e2 = particle.E() * particle.E();
-
-   double inv_mass = TMath::Sqrt(e2 - p2);
-
-   return inv_mass;
+   return inv_mass/1e3;    
 }
 
 
 void MyClass::DrawHistos(){
 
-    TCanvas *c1 = new TCanvas("c1", "Momentum of the particles", 800, 600);
+   TCanvas *c1 = new TCanvas("c1", "Momentum of the particles", 800, 600);
 
-    c1->Divide(2, 2);
+   c1->Divide(2, 2);
 
    TH1F* h_e_pT = new TH1F("h_ele_pT", "Electron pT; p_{T} [GeV]; Entries", 100, 0, 500); // 100 bins from 0 to 500 GeV
    for (const auto& vec : electrons) {
@@ -299,66 +296,50 @@ void MyClass::DrawHistos(){
    c1->Update();
 }
 
-void MyClass::SetFilter(TString setFilter) {
-   if (setFilter == "4_2") {
-      filter = "pass_eq4J2L_NOSYS";
-   } else if (setFilter == "3_2") {
-      filter = "pass_eq3J2L_NOSYS";
-   } else if (setFilter == "2_2") {
-      filter = "pass_leq2J2L_NOSYS";
-   } else if (setFilter == "sub") {
-      filter = "pass_SUBcommon_NOSYS";
-   } else {
-      std::cout << "Select a correct filter";
-   }
-
-   std::cout << "You set the \"" << filter << "\" filter" << '\n';      
+void MyClass::InitFilterMap() {
+   //mappa che associa alla tua tag del filtro il branch corrispondente
+   filter_map["2L4J"] = &pass_SR2L4J_NOSYS;
+   filter_map["2L3J"] = &pass_SR2L3J_NOSYS;
+   filter_map["2L2J"] = &pass_SR2L2J_NOSYS;
 }
 
+bool MyClass::CheckFilter(const std::string& filter) {
+   auto it = filter_map.find(filter);
+   if (it != filter_map.end()) {
+      return static_cast<bool>(*(it->second));  //prendere il valore come bool
+   }
+   std::cout << "you set a non valid filter!" << std::endl;
+   return false;  
+}
+
+
 void MyClass::Loop() {
-   //   In a ROOT session, you can do:
-   //      root> .L MyClass.C #Per runnare 1 
-   //      root> MyClass t #Per runnare 2 
-   //      root> t.GetEntry(12); // Fill t data members with entry number 12
-   //      root> t.Show();       // Show values of entry 12
-   //      root> t.Show(16);     // Read and show values of entry 16
-   //      root> t.Loop();       #Per runnare 3 //Loop on all entries
-   // 
-   //
-
-   //     This is the loop skeleton where:
-   //    jentry is the global entry number in the chain
-   //    ientry is the entry number in the current Tree
-   //  Note that the argument to GetEntry must be:
-   //    jentry for TChain::GetEntry
-   //    ientry for TTree::GetEntry and TBranch::GetEntry
-   //
-   //       To read only selected branches, Insert statements like:
-   // METHOD1:
-   //    fChain->SetBranchStatus("*",0);  // disable all branches
-   //    fChain->SetBranchStatus("branchname",1);  // activate branchname
-   // METHOD2: replace line
-   //    fChain->GetEntry(jentry);       //read all branches
-   //by  b_branchname->GetEntry(ientry); //read only this branch
+   
    if (fChain == 0) return;
-
    Long64_t nentries = fChain->GetEntriesFast();
-
    Long64_t nbytes = 0, nb = 0;
+
+   //INSERISCI QUA LA TAG PER LA REGIONE 
+   //(se preferisci, mettilo come argomento a una funzione)
+   std::string filter = "2L3J";
+   InitFilterMap(); 
+
+
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
-      //std::cout << el_pt_NOSYS->size() << std::endl;
-
-      //aggiungere il push_back al vector particles
-
-
+ 
+      std::cout << '\n' << "---------" << '\n';
+      //Era un controllo che la mappa funzionasse
+      //std::cout << "Filter value check: " << (bool)pass_SR2L3J_NOSYS << std::endl;
+      
       std::vector<ROOT::Math::PtEtaPhiEVector> particles;
       std::vector<std::string> particle_types;
 
-      if (filter == "pass_eq4J2L_NOSYS" && (bool)pass_eq4J2L_NOSYS) {
+      bool pass = CheckFilter(filter);
+      if (pass) {
          for (size_t i=0; i<el_pt_NOSYS->size(); i++){
             ROOT::Math::PtEtaPhiEVector vecTmp1(el_pt_NOSYS->at(i), el_eta->at(i), el_phi->at(i), el_e_NOSYS->at(i));
             electrons.push_back(vecTmp1);
@@ -386,94 +367,10 @@ void MyClass::Loop() {
 
          }
 
-      } else if (filter == "pass_eq3J2L_NOSYS" && (bool)pass_eq3J2L_NOSYS) { 
-         for (size_t i=0; i<el_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp1(el_pt_NOSYS->at(i), el_eta->at(i), el_phi->at(i), el_e_NOSYS->at(i));
-            electrons.push_back(vecTmp1);
-            particles.push_back(vecTmp1);
-         }
-         if (el_pt_NOSYS->size() == 2) {
-            ++e2_entries;
-         } else if (el_pt_NOSYS->size() == 1) {
-            ++e_entries;
-         }
-
-         for (size_t i=0; i<mu_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp2(mu_pt_NOSYS->at(i), mu_eta->at(i) , mu_phi->at(i), mu_e_NOSYS->at(i));
-            muons.push_back(vecTmp2);
-            particles.push_back(vecTmp2);
-         }
-         if (mu_pt_NOSYS->size() == 2) {++mu2_entries;}
-
-         for (size_t i=0; i<jet_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp3(jet_pt_NOSYS->at(i), jet_eta->at(i) , jet_phi->at(i), jet_e_NOSYS->at(i));
-            jets.push_back(vecTmp3);
-            particles.push_back(vecTmp3);
-         }
-      } else if (filter == "pass_leq2J2L_NOSYS" && (bool)pass_leq2J2L_NOSYS) { 
-         for (size_t i=0; i<el_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp1(el_pt_NOSYS->at(i), el_eta->at(i), el_phi->at(i), el_e_NOSYS->at(i));
-            electrons.push_back(vecTmp1);
-            particles.push_back(vecTmp1);
-         }
-         if (el_pt_NOSYS->size() == 2) {
-            ++e2_entries;
-         } else if (el_pt_NOSYS->size() == 1) {
-            ++e_entries;
-         }
-
-         for (size_t i=0; i<mu_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp2(mu_pt_NOSYS->at(i), mu_eta->at(i) , mu_phi->at(i), mu_e_NOSYS->at(i));
-            muons.push_back(vecTmp2);
-            particles.push_back(vecTmp2);
-         }
-         if (mu_pt_NOSYS->size() == 2) {++mu2_entries;}
-
-         for (size_t i=0; i<jet_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp3(jet_pt_NOSYS->at(i), jet_eta->at(i) , jet_phi->at(i), jet_e_NOSYS->at(i));
-            jets.push_back(vecTmp3);
-            particles.push_back(vecTmp3);
-         }
-      } else if (filter == "pass_SUBcommon_NOSYS" && (bool)pass_SUBcommon_NOSYS) { 
-         for (size_t i=0; i<el_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp1(el_pt_NOSYS->at(i), el_eta->at(i), el_phi->at(i), el_e_NOSYS->at(i));
-            electrons.push_back(vecTmp1);
-            particles.push_back(vecTmp1);
-            particle_types.push_back("electron");
-         }
-         if (el_pt_NOSYS->size() == 2) {
-            ++e2_entries;
-         } else if (el_pt_NOSYS->size() == 1) {
-            ++e_entries;
-         }
-
-         for (size_t i=0; i<mu_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp2(mu_pt_NOSYS->at(i), mu_eta->at(i) , mu_phi->at(i), mu_e_NOSYS->at(i));
-            muons.push_back(vecTmp2);
-            particles.push_back(vecTmp2);
-            particle_types.push_back("muon");
-         }
-         if (mu_pt_NOSYS->size() == 2) {++mu2_entries;}
-
-         for (size_t i=0; i<jet_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp3(jet_pt_NOSYS->at(i), jet_eta->at(i) , jet_phi->at(i), jet_e_NOSYS->at(i));
-            jets.push_back(vecTmp3);
-            particles.push_back(vecTmp3);
-         }
-      }
-
-      //for (const auto& particle : particles) {
-      //   std::cout << "px: " << particle.Px() 
-      //             << ", py: " << particle.Py() 
-      //             << ", pz: " << particle.Pz() 
-      //             << ", E: " << particle.E() 
-      //             << '\n';
-      //}
-      //std::cout << "-------------" << '\n';
+      } 
 
       if (particles.size() < 3) {
-         std::cout<< "There aren't enough particles" << '\n'
-                  << "---------" << '\n';
+         std::cout<< "There aren't enough particles" << '\n' << "---------" << '\n';
          particles.clear();
          particle_types.clear();
          continue;
@@ -499,32 +396,24 @@ void MyClass::Loop() {
 
                   //std::cout << tempInvMass << '\n';
 
-                  if (i == 0 && TMath::Abs(tempInvMass - 65 * 1e3) < TMath::Abs(inv_mass1 - 65)){
-                     inv_mass1 = tempInvMass;
-                     comb1 = {p1, p2, p3};
-                  }
+                  // if (i == 0 && TMath::Abs(tempInvMass - 65 * 1e3) < TMath::Abs(inv_mass1 - 65)){
+                  //    inv_mass1 = tempInvMass;
+                  //    comb1 = {p1, p2, p3};
+                  // }
                
-                  if (i == 1 && TMath::Abs(tempInvMass - 65 * 1e3) < TMath::Abs(inv_mass2 - 65)){
-                     inv_mass2 = tempInvMass;
-                     comb2  = {p1, p2, p3};
-                  }            
+                  // if (i == 1 && TMath::Abs(tempInvMass - 65 * 1e3) < TMath::Abs(inv_mass2 - 65)){
+                  //    inv_mass2 = tempInvMass;
+                  //    comb2  = {p1, p2, p3};
+                  // }            
                }
             }   
          }
       }
-      
-//      std::cout << "Inv_mass1: " << inv_mass1 << "\n"
-//                << "Inv_mass2: " << inv_mass2 << '\n'
-//                << "---------" << '\n';
-  
+
+
       particles.clear();
       particle_types.clear();
 
-      //aggiungere eventualmente i riempimenti di particle_types in 3_2 e 2_2
-
-      //aggiungere il riempimento di particles in tutte le casistiche di taglio - ok
-      //testare il corretto riempimento di particles -ok
-      //aggiungere il calcolo di massa invariante in tutte le combinazioni possibili - ok
    } //END LOOP IN ENTRIES
 
    DrawHistos();
