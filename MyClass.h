@@ -214,4 +214,4 @@ public :
 
 #ifdef MyClass_cxx
 
-#endif // #ifdef MyClass_cxx
+#endif 

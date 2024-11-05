@@ -499,15 +499,15 @@ void MyClass::Loop() {
 
                   //std::cout << tempInvMass << '\n';
 
-                  if (i == 0 && TMath::Abs(tempInvMass - 65 * 1e3) < TMath::Abs(inv_mass1 - 65)){
-                     inv_mass1 = tempInvMass;
-                     comb1 = {p1, p2, p3};
-                  }
+                  //if (i == 0 && TMath::Abs(tempInvMass - 65 * 1e3) < TMath::Abs(inv_mass1 - 65)){
+                  //   inv_mass1 = tempInvMass;
+                  //   comb1 = {p1, p2, p3};
+                  //}
                
-                  if (i == 1 && TMath::Abs(tempInvMass - 65 * 1e3) < TMath::Abs(inv_mass2 - 65)){
-                     inv_mass2 = tempInvMass;
-                     comb2  = {p1, p2, p3};
-                  }            
+                  //if (i == 1 && TMath::Abs(tempInvMass - 65 * 1e3) < TMath::Abs(inv_mass2 - 65)){
+                  //   inv_mass2 = tempInvMass;
+                  //   comb2  = {p1, p2, p3};
+                  //}            
                }
             }   
          }
