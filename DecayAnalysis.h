@@ -210,12 +210,13 @@ public :
    std::vector<ROOT::Math::PtEtaPhiEVector> jets;
    std::vector<ROOT::Math::PtEtaPhiEVector> comb1;
    std::vector<ROOT::Math::PtEtaPhiEVector> comb2;
+   std::vector<double> all_inv_masses;
+   std::vector<double> inv_masses;
    int e2_entries{};
    int e_entries{};
    int mu2_entries{};
-   double inv_mass1{};
-   double inv_mass2{};
    void DrawHistos();
+   void CreateOutputFile();
    void InitFilterMap();
    bool CheckFilter(const std::string& filter = "2L4J");
    std::unordered_map<std::string, Char_t*> filter_map;

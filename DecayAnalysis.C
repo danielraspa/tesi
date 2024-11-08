@@ -3,6 +3,7 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+#include <TFile.h>
 
 
 DecayAnalysis::DecayAnalysis(TTree *tree) : fChain(0)  {
@@ -238,16 +239,15 @@ double DecayAnalysis::CalcInvMass(vector<ROOT::Math::PtEtaPhiEVector>& particles
    double inv_mass = TMath::Sqrt(tot_e2 - tot_p2);
    std::cout << "inv_mass " << inv_mass/1e3 << '\n';
 
-   //std::cout << inv_mass << '\n';
-
    return inv_mass/1e3;    
 }
 
 void DecayAnalysis::DrawHistos(){
-
    TCanvas *c1 = new TCanvas("c1", "Momentum of the particles", 800, 600);
+   TCanvas *c2 = new TCanvas("c2", "Invariant masses", 800, 600);
 
    c1->Divide(2, 2);
+   c2->Divide(1, 2);
 
    TH1F* h_e_pT = new TH1F("h_ele_pT", "Electron pT; p_{T} [GeV]; Entries", 100, 0, 500); // 100 bins from 0 to 500 GeV
    for (const auto& vec : electrons) {
@@ -288,7 +288,36 @@ void DecayAnalysis::DrawHistos(){
    c1->cd(4);
    leptons->Draw();
 
+   TH1F* all_inv_masses_hist = new TH1F("all_inv_masses", "All invariant masses; m [GeV]; Entries", 100, 0, 500); // 100 bins from 0 to 500 GeV 
+   for (const auto& vec : all_inv_masses) {
+      all_inv_masses_hist->Fill(vec); 
+      //std::cout << vec << '\n';
+   }
+   TH1F* inv_masses_hist = new TH1F("inv_masses", "Selected invariant masses; m [GeV]; Entries", 100, 0, 500); // 100 bins from 0 to 500 GeV 
+   for (const auto& vec : inv_masses) {
+      inv_masses_hist->Fill(vec); 
+      //std::cout << vec << '\n';
+   }
+
+   c2->cd(1);
+   all_inv_masses_hist->Draw();
+
+   c2->cd(2);
+   inv_masses_hist->Draw();
+
    c1->Update();
+   c2->Update();
+
+   TFile *f = new TFile("graphs.root", "RECREATE");
+
+   h_e_pT->Write();
+   h_mu_pT->Write();
+   h_jet_pT->Write();
+   leptons->Write();
+   all_inv_masses_hist->Write();
+   inv_masses_hist->Write();
+
+   f->Close();
 }
 
 void DecayAnalysis::InitFilterMap() {
@@ -312,9 +341,7 @@ void DecayAnalysis::Loop()
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0, nb = 0;
 
-   //INSERISCI QUA LA TAG PER LA REGIONE 
-   //(se preferisci, mettilo come argomento a una funzione)
-   std::string filter = "2L2J"; //scegli tra 2L4J, 2L3J, 2L2J
+   std::string filter = "2L4J"; //scegli tra 2L4J, 2L3J, 2L2J
    InitFilterMap(); 
 
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -369,7 +396,13 @@ void DecayAnalysis::Loop()
       //for(int i = 0; i < particle_types.size(); i++) {
       //   std::cout << particle_types[i] << '\n';
       //}
+      double inv_mass1{1e6}; //perchè con 0 non si aggiornerebbero mai
+      double inv_mass2{0};
+
       if (particles.size() > 3) {
+         std::vector<double> masses_i0;
+         std::vector<double> masses_i1;
+
          for (int i = 0; i < 2; i++) {
             ROOT::Math::PtEtaPhiEVector& p1 = particles[i];
 
@@ -382,7 +415,12 @@ void DecayAnalysis::Loop()
                   std::vector<ROOT::Math::PtEtaPhiEVector> combination = {p1, p2, p3};
                   double tempInvMass = CalcInvMass(combination); 
 
+                  all_inv_masses.push_back(tempInvMass);
+
                   //std::cout << tempInvMass << '\n';
+
+                  if (i == 0) {masses_i0.push_back(tempInvMass);}
+                  if (i == 1) {masses_i1.push_back(tempInvMass);}
 
                   // if (i == 0 && TMath::Abs(tempInvMass - 65 * 1e3) < TMath::Abs(inv_mass1 - 65)){
                   //    inv_mass1 = tempInvMass;
@@ -396,12 +434,22 @@ void DecayAnalysis::Loop()
                }
             }   
          }
+            if(filter == "2L4J"){
+               for (int i = 0; i < masses_i0.size(); i++) { 
+                  for (int j = 0; j < masses_i1.size(); j++) {
+                     if(TMath::Abs(masses_i0[i] - masses_i1[j]) < TMath::Abs(inv_mass1 - inv_mass2)) {
+                        inv_mass1 = masses_i0[i];
+                        inv_mass2 = masses_i1[j];
+                     }
+                  }  
+               }
+               inv_masses.push_back(inv_mass1);
+               inv_masses.push_back(inv_mass2);
+         }  
       }
-
 
       particles.clear();
       particle_types.clear();
-
    } //END LOOP IN ENTRIES
 
    DrawHistos();
