@@ -242,6 +242,16 @@ double DecayAnalysis::CalcInvMass(vector<ROOT::Math::PtEtaPhiEVector>& particles
    return inv_mass/1e3;    
 }
 
+double DecayAnalysis::CalcDeltaR(ROOT::Math::PtEtaPhiEVector& lep1, ROOT::Math::PtEtaPhiEVector& lep2) {
+   double delta_eta = lep1.Eta() - lep2.Eta();
+
+   double delta_phi = lep1.Phi() - lep2.Phi();
+
+   double deltaR = TMath::Sqrt(delta_eta * delta_eta + delta_phi * delta_phi);
+
+   return deltaR;
+}
+
 void DecayAnalysis::DrawHistos(){
    TCanvas *c1 = new TCanvas("c1", "Momentum of the particles", 800, 600);
    TCanvas *c2 = new TCanvas("c2", "Invariant masses", 800, 600);
@@ -249,7 +259,7 @@ void DecayAnalysis::DrawHistos(){
    c1->Divide(2, 2);
    c2->Divide(1, 2);
 
-   TH1F* h_e_pT = new TH1F("h_ele_pT", "Electron pT; p_{T} [GeV]; Entries", 100, 0, 500); // 100 bins from 0 to 500 GeV
+   TH1F* h_e_pT = new TH1F("h_ele_pT", "Electron pT; p_{T} [GeV]; Entries", 100, 0, 300); // 100 bins from 0 to 500 GeV
    for (const auto& vec : electrons) {
       //std::cout << vec.Pt() << std::endl;
       h_e_pT->Fill(vec.Pt()/1e3); //in GeV
@@ -257,7 +267,7 @@ void DecayAnalysis::DrawHistos(){
    c1->cd(1);
    h_e_pT->Draw();
 
-   TH1F* h_mu_pT = new TH1F("h_muon_pT", "Muon pT; p_{T} [GeV]; Entries", 100, 0, 500); // 100 bins from 0 to 500 GeV
+   TH1F* h_mu_pT = new TH1F("h_muon_pT", "Muon pT; p_{T} [GeV]; Entries", 100, 0, 200); // 100 bins from 0 to 500 GeV
    for (const auto& vec : muons) {
       //std::cout << vec.Pt() << std::endl;
       h_mu_pT->Fill(vec.Pt()/1e3); //in GeV
@@ -288,7 +298,7 @@ void DecayAnalysis::DrawHistos(){
    c1->cd(4);
    leptons->Draw();
 
-   TH1F* all_inv_masses_hist = new TH1F("all_inv_masses", "All invariant masses; m [GeV]; Entries", 100, 0, 500); // 100 bins from 0 to 500 GeV 
+   TH1F* all_inv_masses_hist = new TH1F("all_inv_masses", "All invariant masses; m [GeV]; Entries", 100, 0, 1000); // 100 bins from 0 to 500 GeV 
    for (const auto& vec : all_inv_masses) {
       all_inv_masses_hist->Fill(vec); 
       //std::cout << vec << '\n';
@@ -298,6 +308,27 @@ void DecayAnalysis::DrawHistos(){
       inv_masses_hist->Fill(vec); 
       //std::cout << vec << '\n';
    }
+
+   TH1F* met_hist = new TH1F("met", "Missing energies; m [Gev]; Entries)",100, 0, 150);
+   for (const auto& vec : met) {
+      met_hist->Fill(vec/1e3);
+   }
+
+   TH1F* pT_leading_hist = new TH1F("pT_lead", "pT leading; m [Gev]; Entries)",100, 0, 300);
+   for (const auto& vec : pT_leading) {
+      pT_leading_hist->Fill(vec/1e3);
+   }
+
+   TH1F* pT_subleading_hist = new TH1F("pT_sublead", "pT subleading; m [Gev]; Entries)",100, 0, 200);
+   for (const auto& vec : pT_subleading) {
+      pT_subleading_hist->Fill(vec/1e3);
+   }
+
+   TH1F* deltaR_hist = new TH1F("deltaR", "deltaR; deltaR; Entries)",11, 0, 11);
+   for (const auto& vec : deltaR) {
+      deltaR_hist->Fill(vec);
+   }
+   
 
    c2->cd(1);
    all_inv_masses_hist->Draw();
@@ -316,6 +347,10 @@ void DecayAnalysis::DrawHistos(){
    leptons->Write();
    all_inv_masses_hist->Write();
    inv_masses_hist->Write();
+   met_hist->Write();
+   pT_leading_hist->Write();
+   pT_subleading_hist->Write();
+   deltaR_hist->Write();
 
    f->Close();
 }
@@ -381,6 +416,21 @@ void DecayAnalysis::Loop()
             particles.push_back(vecTmp3);
 
          }
+
+         met.push_back(met_met_NOSYS);
+         //std::cout<<met_met_NOSYS << '\n';
+      }
+      if(particles.size() > 1) {
+         if (particles[0].Pt() > particles[1].Pt()) {
+            pT_leading.push_back(particles[0].Pt());
+            pT_subleading.push_back(particles[1].Pt());
+         } else {
+            pT_leading.push_back(particles[1].Pt());
+            pT_subleading.push_back(particles[0].Pt());    
+         }
+
+         double deltaRTmp = CalcDeltaR(particles[0], particles[1]);
+         deltaR.push_back(deltaRTmp);
       }
 
       if (particles.size() < 3) {

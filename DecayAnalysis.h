@@ -203,7 +203,7 @@ public :
    virtual void     Show(Long64_t entry = -1);
 
    double CalcInvMass(std::vector<ROOT::Math::PtEtaPhiEVector>& particles);
-   // double CalcInvMass(const ROOT::Math::PtEtaPhiEVector& particle);
+   double CalcDeltaR(ROOT::Math::PtEtaPhiEVector& lep1, ROOT::Math::PtEtaPhiEVector& lep2);
 
    std::vector<ROOT::Math::PtEtaPhiEVector> electrons;
    std::vector<ROOT::Math::PtEtaPhiEVector> muons;
@@ -212,6 +212,10 @@ public :
    std::vector<ROOT::Math::PtEtaPhiEVector> comb2;
    std::vector<double> all_inv_masses;
    std::vector<double> inv_masses;
+   std::vector<double> met;
+   std::vector<double> pT_leading;
+   std::vector<double> pT_subleading;
+   std::vector<double> deltaR;
    int e2_entries{};
    int e_entries{};
    int mu2_entries{};
