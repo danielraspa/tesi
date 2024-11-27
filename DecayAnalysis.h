@@ -216,6 +216,8 @@ public :
    std::vector<double> pT_leading;
    std::vector<double> pT_subleading;
    std::vector<double> deltaR;
+   std::vector<int> entriesTot={0,0,0,0,0,0,0,0,0,0};
+
    int e2_entries{};
    int e_entries{};
    int mu2_entries{};

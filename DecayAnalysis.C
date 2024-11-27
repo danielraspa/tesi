@@ -10,9 +10,11 @@ DecayAnalysis::DecayAnalysis(TTree *tree) : fChain(0)  {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("sig_510664_mc20e_EL_LooseBLayerLH_Loose_VarRad_MU_Loose_Loose_VarRad.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("zjets.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("sig_510664_mc20e_EL_LooseBLayerLH_Loose_VarRad_MU_Loose_Loose_VarRad.root");
+         f = new TFile("zjets.root");
+         cout << "AAAAAAAA"<<endl;
+         
       }
       f->GetObject("reco",tree);
 
@@ -237,7 +239,7 @@ double DecayAnalysis::CalcInvMass(vector<ROOT::Math::PtEtaPhiEVector>& particles
    //std::cout << "E2 " << tot_e2 << '\n';
 
    double inv_mass = TMath::Sqrt(tot_e2 - tot_p2);
-   std::cout << "inv_mass " << inv_mass/1e3 << '\n';
+   //std::cout << "inv_mass " << inv_mass/1e3 << '\n';
 
    return inv_mass/1e3;    
 }
@@ -264,14 +266,18 @@ void DecayAnalysis::DrawHistos(){
       //std::cout << vec.Pt() << std::endl;
       h_e_pT->Fill(vec.Pt()/1e3); //in GeV
    }
+   h_e_pT->Scale(1.0 / entriesTot[0]);
    c1->cd(1);
    h_e_pT->Draw();
-
+   cout<<"INTEGRAL h_e_pT " << h_e_pT->Integral(-1,-1) <<endl;
    TH1F* h_mu_pT = new TH1F("h_muon_pT", "Muon pT; p_{T} [GeV]; Entries", 100, 0, 200); // 100 bins from 0 to 500 GeV
    for (const auto& vec : muons) {
       //std::cout << vec.Pt() << std::endl;
       h_mu_pT->Fill(vec.Pt()/1e3); //in GeV
    }
+   h_mu_pT->Scale(1.0 / entriesTot[1]);
+   cout<<"INTEGRAL h_mu_pT " << h_mu_pT->Integral(-1,-1)<<endl;
+
    c1->cd(2);
    h_mu_pT->Draw();
 
@@ -280,6 +286,9 @@ void DecayAnalysis::DrawHistos(){
       //std::cout << vec.Pt() << std::endl;
       h_jet_pT->Fill(vec.Pt()/1e3); //in GeV
    }
+   h_jet_pT->Scale(1.0 / entriesTot[2]);
+   cout<<"INTEGRAL h_jet_pT " << h_jet_pT->Integral(-1,-1)<<endl;
+
 
    c1->cd(3);
    h_jet_pT->Draw();
@@ -303,31 +312,48 @@ void DecayAnalysis::DrawHistos(){
       all_inv_masses_hist->Fill(vec); 
       //std::cout << vec << '\n';
    }
-   TH1F* inv_masses_hist = new TH1F("inv_masses", "Selected invariant masses; m [GeV]; Entries", 100, 0, 500); // 100 bins from 0 to 500 GeV 
+   all_inv_masses_hist->Scale(1.0 / entriesTot[4]);
+   cout<<"INTEGRAL all_inv_masses_hist " << all_inv_masses_hist->Integral(-1,-1)<<endl;
+   TH1F* inv_masses_hist = new TH1F("inv_masses", "Selected invariant masses; m_{inv} [GeV]; Entries", 100, 0, 500); // 100 bins from 0 to 500 GeV 
    for (const auto& vec : inv_masses) {
       inv_masses_hist->Fill(vec); 
       //std::cout << vec << '\n';
    }
+   inv_masses_hist->Scale(1.0 / entriesTot[5]);
+   cout<<"INTEGRAL inv_masses_hist " << inv_masses_hist->Integral(-1,-1)<<endl;
 
-   TH1F* met_hist = new TH1F("met", "Missing energies; m [Gev]; Entries)",100, 0, 150);
+
+   TH1F* met_hist = new TH1F("met", "Missing energies; E^{T}_{miss} [Gev]; Entries)",100, 0, 150);
    for (const auto& vec : met) {
       met_hist->Fill(vec/1e3);
    }
+   met_hist->Scale(1.0 / entriesTot[6]);
 
-   TH1F* pT_leading_hist = new TH1F("pT_lead", "pT leading; m [Gev]; Entries)",100, 0, 300);
+   cout<<"INTEGRAL met_hist " << met_hist->Integral(-1,-1)<<endl;
+
+
+   TH1F* pT_leading_hist = new TH1F("pT_lead", "pT leading; p_{T}^{leading} [Gev]; Entries)",100, 0, 300);
    for (const auto& vec : pT_leading) {
       pT_leading_hist->Fill(vec/1e3);
    }
+      pT_leading_hist->Scale(1.0 / entriesTot[7]);
 
-   TH1F* pT_subleading_hist = new TH1F("pT_sublead", "pT subleading; m [Gev]; Entries)",100, 0, 200);
+   cout<<"INTEGRAL pT_leading_hist " << pT_leading_hist->Integral(-1,-1)<<endl;
+
+
+   TH1F* pT_subleading_hist = new TH1F("pT_sublead", "pT subleading; p_{T}^{subleading} [Gev]; Entries)",100, 0, 200);
    for (const auto& vec : pT_subleading) {
       pT_subleading_hist->Fill(vec/1e3);
    }
+   pT_subleading_hist->Scale(1.0 / entriesTot[8]);
+   cout<<"INTEGRAL pT_subleading_hist " << pT_subleading_hist->Integral(-1,-1)<<endl;
 
-   TH1F* deltaR_hist = new TH1F("deltaR", "deltaR; deltaR; Entries)",11, 0, 11);
+   TH1F* deltaR_hist = new TH1F("deltaR", "deltaR; #DeltaR [rad]; Entries)",11, 0, 11);
    for (const auto& vec : deltaR) {
       deltaR_hist->Fill(vec);
    }
+   deltaR_hist->Scale(1.0 / entriesTot[9]);
+   cout<<"INTEGRAL deltaR_hist " << deltaR_hist->Integral(-1,-1)<<endl;
    
 
    c2->cd(1);
@@ -372,6 +398,12 @@ bool DecayAnalysis::CheckFilter(const std::string& filter) {
 
 void DecayAnalysis::Loop()
 {
+
+
+   vector<double> ptLep;
+
+   double threshold = 100000; //100 GeV
+
    if (fChain == 0) return;
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0, nb = 0;
@@ -390,36 +422,79 @@ void DecayAnalysis::Loop()
 
       bool pass = CheckFilter(filter);
       if (pass) {
+
+         //*************** 
+         //mi riempio un vettore con i pt dei leptoni
          for (size_t i=0; i<el_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp1(el_pt_NOSYS->at(i), el_eta->at(i), el_phi->at(i), el_e_NOSYS->at(i));
-            electrons.push_back(vecTmp1);
-            particles.push_back(vecTmp1);
-            particle_types.push_back("electron");
+            ptLep.push_back(el_pt_NOSYS->at(i));
          }
-         if (el_pt_NOSYS->size() == 2) {
-            ++e2_entries;
-         } else if (el_pt_NOSYS->size() == 1) {
-            ++e_entries;
-         }
-
          for (size_t i=0; i<mu_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp2(mu_pt_NOSYS->at(i), mu_eta->at(i) , mu_phi->at(i), mu_e_NOSYS->at(i));
-            muons.push_back(vecTmp2);
-            particles.push_back(vecTmp2);
-            particle_types.push_back("muon");
+            ptLep.push_back(mu_pt_NOSYS->at(i));
          }
-         if (mu_pt_NOSYS->size() == 2) {++mu2_entries;}
+         //ordino il vettore in ordine decrescente
+         std::sort(ptLep.begin(), ptLep.end(), std::greater<double>());
+         
+         //*************************************************** 
+         // In questo blocco conto le entries che avrei se non facessi il taglio in pt
+         entriesTot[0]+=el_pt_NOSYS->size(); //el pt
+         entriesTot[1]+=mu_pt_NOSYS->size(); //mu pt
+         entriesTot[2]+=jet_pt_NOSYS->size(); //jet pt
+         entriesTot[3]+=(el_pt_NOSYS->size()+mu_pt_NOSYS->size()); //dummy, non serve
+         if ((el_pt_NOSYS->size()+mu_pt_NOSYS->size()+jet_pt_NOSYS->size())>3){ //all inv masses
 
-         for (size_t i=0; i<jet_pt_NOSYS->size(); i++){
-            ROOT::Math::PtEtaPhiEVector vecTmp3(jet_pt_NOSYS->at(i), jet_eta->at(i) , jet_phi->at(i), jet_e_NOSYS->at(i));
-            jets.push_back(vecTmp3);
-            particles.push_back(vecTmp3);
+            entriesTot[4]+=(jet_pt_NOSYS->size()*(jet_pt_NOSYS->size()-1));
 
          }
+         entriesTot[5]+=2; //inv mass selected
+         entriesTot[6]+=1; //met
+         entriesTot[7]+=1; //pt lead
+         entriesTot[8]+=1; //pt sublead
+         entriesTot[9]+=1; //deltaR
+         //*************************************************** 
 
-         met.push_back(met_met_NOSYS);
-         //std::cout<<met_met_NOSYS << '\n';
+         //applico il taglio sul pT leading dei leptoni
+         if (ptLep.at(0)<threshold){
+         
+         
+            
+
+
+            for (size_t i=0; i<el_pt_NOSYS->size(); i++){
+               ROOT::Math::PtEtaPhiEVector vecTmp1(el_pt_NOSYS->at(i), el_eta->at(i), el_phi->at(i), el_e_NOSYS->at(i));
+               electrons.push_back(vecTmp1);
+               particles.push_back(vecTmp1);
+               particle_types.push_back("electron");
+            }
+            if (el_pt_NOSYS->size() == 2) {
+               ++e2_entries;
+            } else if (el_pt_NOSYS->size() == 1) {
+               ++e_entries;
+            }
+
+            for (size_t i=0; i<mu_pt_NOSYS->size(); i++){
+               ROOT::Math::PtEtaPhiEVector vecTmp2(mu_pt_NOSYS->at(i), mu_eta->at(i) , mu_phi->at(i), mu_e_NOSYS->at(i));
+               muons.push_back(vecTmp2);
+               particles.push_back(vecTmp2);
+               particle_types.push_back("muon");
+            }
+            if (mu_pt_NOSYS->size() == 2) {++mu2_entries;}
+
+            for (size_t i=0; i<jet_pt_NOSYS->size(); i++){
+               ROOT::Math::PtEtaPhiEVector vecTmp3(jet_pt_NOSYS->at(i), jet_eta->at(i) , jet_phi->at(i), jet_e_NOSYS->at(i));
+               jets.push_back(vecTmp3);
+               particles.push_back(vecTmp3);
+
+            }
+
+            met.push_back(met_met_NOSYS);
+            //std::cout<<met_met_NOSYS << '\n';
+
+         }
       }
+      ptLep.clear();
+
+
+
       if(particles.size() > 1) {
          if (particles[0].Pt() > particles[1].Pt()) {
             pT_leading.push_back(particles[0].Pt());
@@ -434,15 +509,15 @@ void DecayAnalysis::Loop()
       }
 
       if (particles.size() < 3) {
-         std::cout << "There aren't enough particles" << '\n' 
-                   << "---------" << '\n';
+         //std::cout << "There aren't enough particles" << '\n' 
+         //          << "---------" << '\n';
          particles.clear();
          particle_types.clear();
          continue;
       }
 
-      std::cout << "Event " << jentry << ": "
-                  << particle_types[0] << " and " << particle_types[1] << '\n';
+      //std::cout << "Event " << jentry << ": "
+      //            << particle_types[0] << " and " << particle_types[1] << '\n';
       //for(int i = 0; i < particle_types.size(); i++) {
       //   std::cout << particle_types[i] << '\n';
       //}
@@ -500,7 +575,12 @@ void DecayAnalysis::Loop()
 
       particles.clear();
       particle_types.clear();
+
+      
    } //END LOOP IN ENTRIES
 
    DrawHistos();
+
+
 }
+
